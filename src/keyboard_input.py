@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
- 
+
 import sys, select, tty, termios
 import rospy
 from std_msgs.msg import String
- 
+
 if __name__ == '__main__':
     # Publish a ‘keys’ message, the message type is String, and the buffer is 1
     key_pub = rospy.Publisher('keys', String, queue_size=1)
@@ -19,8 +19,11 @@ if __name__ == '__main__':
 
     while not rospy.is_shutdown():
         if select.select([sys.stdin], [], [], 0)[0] == [sys.stdin]:
-            # release the news 
+            # release the news
             key_pub.publish(sys.stdin.read(1))
-        rate.sleep()
-    # Restore the terminal to standard mode 
+        try:
+            rate.sleep()
+        except:
+            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_attr)
+    # Restore the terminal to standard mode
     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_attr)
